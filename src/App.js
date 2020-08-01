@@ -1,35 +1,52 @@
-import React from 'react';
-import './App.css';
+import React, { useState } from 'react';
 import './tailwind.output.css';
-
-const wait = (ms) => new Promise(resolve => {
-  setTimeout(() => {}, ms)
-})
-
-const getHeroDetail = async (name) => {
-  await wait(1000)
-  if (name === 'superman') {
-    return {
-      id: 1,
-      name: 'Superman',
-      avatar: 'https://cdn.theatlantic.com/thumbor/xuePShEYRyEQec_THgWcYFhYLnw=/540x0:2340x1800/500x500/media/img/mt/2016/01/superman/original.jpg',
-      description: 'Superman is a fictional superhero. The character was created by writer Jerry Siegel and artist Joe Shuster, and first appeared in the comic book Action Comics #1 (cover-dated June 1938 and published April 18, 1938).[1] The character regularly appears in comic books published by DC Comics, and has been adapted to a number of radio serials, movies, and television shows.',
-    }
-  }
-  if (name === 'batman') {
-    return {
-      id: 2,
-      name: 'Batman',
-      avatar: 'https://www.1999.co.jp/itbig47/10475358.jpg',
-      description: 'Batman is a fictional superhero appearing in American comic books published by DC Comics. The character was created by artist Bob Kane and writer Bill Finger,[2][3] and first appeared in Detective Comics #27 in 1939. Originally named the "Bat-Man," the character is also referred to by such epithets as the Caped Crusader, the Dark Knight, and the World\'s Greatest Detective.'
-    }
-  }
-  throw new Error('404')
-}
+import { getHeroDetail } from './api';
 
 function App() {
+  const [text, setText] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState(null);
+  const handleSubmit = async () => {
+    setLoading(true);
+    try {
+      const response = await getHeroDetail(text);
+      setData(response);
+    } catch (e) {
+      console.log('e', e);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
-    <div>
+    <div className="max-w-2xl mx-auto py-5">
+      <label className="font-bold mb-1 inline-block" htmlFor="search">
+        Search hero
+      </label>
+      <div className="flex gap-2">
+        <input
+          className="bg-white focus:outline-none focus:shadow-outline border border-gray-300 rounded-lg py-2 px-4 block appearance-none leading-normal"
+          id="search"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder={'type hero name'}
+        />
+        <button
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          onClick={handleSubmit}
+        >
+          Go
+        </button>
+      </div>
+      {loading && <div className="py-5">loading</div>}
+      {data && (
+        <div className="flex gap-4 mt-10">
+          <img className="block rounded w-56 h-56" alt={`Avatar of ${data.name}`} src={data.avatar} />
+          <div className="flex-auto">
+            <div className="font-bold text-2xl mb-2">{data.name}</div>
+            <p>{data.description}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
